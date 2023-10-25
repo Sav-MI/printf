@@ -70,7 +70,13 @@ typedef enum base_type {
   else {							\
     if (R_CASE)							\
       B[LEN_B ++] = OBJ;					\
-  }								\
+  }
+#define CLEAN_UP_PRECISION(PRSN, BUFFER, LEN)\
+  do {\
+  PRSN = PRSN > LEN ? PRSN - LEN : 0;\
+  while (PRSN --> 0)\
+    BUFFER[LEN ++] = '0';\
+  } while (0)
 
 #define INTEGER_TO_CHAR(INT) (unsigned char)((INT) + 48)
 
@@ -99,5 +105,5 @@ typedef enum base_type {
 int _printf(const char *, ...);
 int handle_format_specifier (const char *, va_list);
 uintmax_t get_integer(int, int, va_list *);
-int integer_handler(uintmax_t, int, unsigned int, int, int, char *, fmt_flags *);
+int integer_handler(uintmax_t, int, unsigned int, int, int, int, char *, fmt_flags *);
 #endif

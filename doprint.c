@@ -8,6 +8,10 @@ int _printf(const char * format, ...){
   return handle_format_specifier(format, copy_cc_printfgs);
 }
 
+void _putchar(char *s)
+{
+  write(1, s, 1);
+}
 int handle_format_specifier (const char *fmt, va_list args){
   register int8_t  i = 0;
   char *strbuffer = malloc(sizeof (char) * BUFFER_SIZE);
@@ -138,10 +142,11 @@ int handle_format_specifier (const char *fmt, va_list args){
       case 'P':
 	is_case = 1;
       case 'p':
-	flag_switch.hash += 1;
+	flag_switch.hash = 1;
 	flag_switch.precision = SIZE_BIT;
 	uinteg = (uintmax_t)(uintptr_t) va_arg(args, void *);
 	base = hexadecimal;
+	length_fstring = integer_handler(x, 0, 0, 10, 1, (char[1024]){'0'}, &s);
 	break;
       case 'X':
 	is_case = 1;
@@ -149,6 +154,7 @@ int handle_format_specifier (const char *fmt, va_list args){
 	flag_switch.precision = -1;
 	base = hexadecimal;
 	uinteg = get_integer(stage, is_signed, &args);
+	length_fstring = integer_handler(x, 0, 0, 10, 1, (char[1024]){'0'}, &s);
 	break;
       case 'O':
 	is_case = 1;
@@ -156,23 +162,27 @@ int handle_format_specifier (const char *fmt, va_list args){
 	flag_switch.precision = -1;
 	base = octadecimal;
 	uinteg = get_integer(stage, is_signed, &args);
+	length_fstring = integer_handler(x, 0, 0, 10, 1, (char[1024]){'0'}, &s);
 	break;
       case 'B':
 	is_case = 1;
       case 'b':
 	uinteg = (uintmax_t)va_arg(args, uintmax_t);
 	base = binary;
+	length_fstring = integer_handler(x, 0, 0, 10, 1, (char[1024]){'0'}, &s);
 	//len = int_formt(val, len, is_case, base, is_signed, buff, &fg);
 	break;
       case 'u':
 	uinteg = get_integer(stage, is_signed, &args);
 	base = decimal;
+	length_fstring = integer_handler(x, 0, 0, 10, 1, (char[1024]){'0'}, &s);
 	break;
       case 'i':
       case 'd':
 	is_signed = 1;
 	base = decimal;
 	uinteg = get_integer(stage, is_signed, &args);
+	length_fstring = integer_handler(x, 0, 0, 10, 1, (char[1024]){'0'}, &s);
 	//len = int_formt(val, len, is_case, base, is_signed, buff, &fg);
 	break;
       case 'r':
@@ -240,7 +250,7 @@ uintmax_t get_integer(int stage, int is_signed, va_list *args){
 }
 
 
-int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int base, int is_signed, char *buffer, fmt_flags *flag_switch){
+int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int base, int is_signed, int rank, char *buffer, fmt_flags *flag_switch){
   uintmax_t temp_integ;
   char temp_buff[1024];
   uint8_t hexcase;
@@ -248,26 +258,16 @@ int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int
   char case_char = 0;
   int local_len = 0;
   int initial_len = length_fstring;
-  int rank = 1; //TODO add rank
   int space, plus, zero, width, hash, precision, negative;
 
+  width = flag_switch->width;
   precision = flag_switch->precision;
-
-  if (precision){
-    precision ^= width;
-    width ^= precision;
-    precision ^= width;
-    flag_switch->neg = 0;
-  }
-  else
-    width = flag_switch->width;
-  
   hash = flag_switch->hash;
   negative = 0;
   plus = space = zero = 0;
-  
+
   if (is_signed)
-    temp_integ = (uintmax_t)((intmax_t)val < 0 ? ((negative = 1), (intmax_t)(-val)) : (intmax_t)val);
+    temp_integ = (uintmax_t)(intmax_t)((intmax_t)(int)val < 0 ? ((negative = 1), -(intmax_t)(val)) : (intmax_t)val);
   else {
     switch (rank){
     case 1:
@@ -282,13 +282,19 @@ int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int
   }
   width -= negative ? 1 : 0;
   
-  if ((flag_switch->zero_pad || precision) && !(flag_switch->neg))
+  if (flag_switch->zero_pad && !(flag_switch->neg))
     zero = 1;
 
   if (base == DECIMAL){
     plus = flag_switch->plus && !(negative) ? 1 : 0;
-    space = flag_switch->space && !(plus) && !(negative) && !(precision) ? 1 : 0;
-  }  
+    space = flag_switch->space && !(plus) && !(negative) ? 1 : 0;
+  }
+  
+  if (plus)
+    width -= 1;
+  
+  if (space)
+    width -= 1;
 
   switch (base){
   case HEXADECIMAL:
@@ -298,12 +304,14 @@ int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int
       temp_buff[local_len ++] = (temp_integ & 0xf) > 9 ? (char)(hexcase + (temp_integ & 0xf)) : 48 + (temp_integ & 0xf);
       temp_integ >>= 4;
     } while (temp_integ);
+    CLEAN_UP_PRECISION(precision, temp_buff, local_len);
     break;
   case DECIMAL:
     do {
       temp_buff[local_len ++] = INTEGER_TO_CHAR(temp_integ % 10);
       temp_integ /= 10;
     } while (temp_integ);
+    CLEAN_UP_PRECISION(precision, temp_buff, local_len);
     break;
   case OCTADECIMAL:
     do {
@@ -312,6 +320,7 @@ int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int
     } while (temp_integ);
     if (hash & val)
       temp_buff[local_len ++] = '0';
+    CLEAN_UP_PRECISION(precision, temp_buff, local_len);
     break;
   case BINARY:
     case_char = 'b';
@@ -319,11 +328,12 @@ int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int
       temp_buff[local_len ++] = INTEGER_TO_CHAR(temp_integ & 1);
       temp_integ >>= 1;
     }  while (temp_integ);
+    CLEAN_UP_PRECISION(precision, temp_buff, local_len);
     break;
   }
-  if (precision
 
   /* push the base character */
+
   if (base != DECIMAL && base != OCTADECIMAL){
     if (!zero && val && hash){
       temp_buff[local_len ++] = (case_char ^ (is_case << 5));
@@ -335,21 +345,15 @@ int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int
       width -= 2;
     }
   }
-
-  if (plus)
-    width -= 1;
   
-  if (space)
-    width -= 1;
-
   /* canonicalizing width with length of temporary buffer */
   width = width > local_len ? width - local_len : 0;
-
+  
   IF_APUSH_A_ELSE_B(zero, space, temp_buff, buffer, local_len, length_fstring, ' ');
   IF_APUSH_A_ELSE_B(zero, plus, temp_buff, buffer, local_len, length_fstring, '+');
   IF_APUSH_A_ELSE_B(zero, negative, temp_buff, buffer, local_len, length_fstring, '-');
 
-  /* push pre-width padding */
+  //* push pre-width padding */
 
   while (!(flag_switch->neg) && width --> 0)
     temp_buff[local_len ++] = zero ? '0' : ' ';
@@ -370,8 +374,8 @@ int integer_handler(uintmax_t val, int length_fstring, unsigned int is_case, int
 
 int main(){
   //.space=0, .plus=0, .neg=0, .zero_pad=0, .width=-1, .star=0, .hash=0
-  int x = 123;
-  printf("%9.6d", x); puts("--");
-  fmt_flags s = {.space=0, .plus=0, .precision=6, .neg=1, .zero_pad=0, .width=9, .star=0, .hash=1};
-  integer_handler(x, 0, 0, 10, 0, (char[1024]){'0'}, &s);
+  int x = -123;
+  printf("%+06d", x); puts("--");
+  fmt_flags s = {.space=0, .plus=1, .precision=0, .neg=0, .zero_pad=1, .width=6, .star=0, .hash=1};
+  integer_handler(x, 0, 0, 10, 1, 1, (char[1024]){'0'}, &s);
 }
