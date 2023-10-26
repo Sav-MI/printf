@@ -1,52 +1,36 @@
 #include <stdio.h>
-#include <stdbool.h>
+#include "main.h"
 
 int main(void){
-char hexcase, hexadec_aa, hexadec_ff;
+int len;
+    int len2;
+    unsigned int ui;
+    void *addr;
 
- unsigned int temp_integ = 13;
- char temp_buff[125];
-
- int is_case = 1;
- int oo = 0;
-  
- if (is_case == true)
-   hexcase = is_case ? 55 : 87; 
- do {
-   hexadec_ff = temp_integ & 0b1111;
-   temp_buff[oo] = hexadec_ff > 9 ? hexcase + hexadec_ff : 48 + hexadec_ff;
-   temp_integ >>= 4;
-   oo++;
- }  while (temp_integ);
-
- while (oo){
-   //   printf("%c", temp_buff[oo-1]);
-   oo--;
- }
- // putchar('a' | (1u << 6));
-
- printf("% .9d,\n", 5);
-
- //space can have -+
- //if there is + and number is negative put it off
- //minus flag without width is useless put it off
- //space only works for positive numbers
- //- width prints to the left according to the number left after the main stuffs print
- //0 flag is ignored with -
-
- //sign comes before width
+    len = _printf("Let's try to printf a simple sentence.\n");
+    len2 = printf("Let's try to printf a simple sentence.\n");
+    ui = (unsigned int)INT_MAX + 1024;
+    addr = (void *)0x7ffe637541f0;
+    _printf("Length:[%d, %i]\n", len, len);
+    printf("Length:[%d, %i]\n", len2, len2);
+    _printf("Negative:[%d]\n", -762534);
+    printf("Negative:[%d]\n", -762534);
+    _printf("Unsigned:[%u]\n", ui);
+    printf("Unsigned:[%u]\n", ui);
+    _printf("Unsigned octal:[%o]\n", ui);
+    printf("Unsigned octal:[%o]\n", ui);
+    _printf("Unsigned hexadecimal:[%x, %X]\n", ui, ui);
+    printf("Unsigned hexadecimal:[%x, %X]\n", ui, ui);
+    _printf("Character:[%c]\n", 'H');
+    printf("Character:[%c]\n", 'H');
+    _printf("String:[%s]\n", "I am a string !");
+    printf("String:[%s]\n", "I am a string !");
+    _printf("Address:[%p]\n", addr);
+    printf("Address:[%p]\n", addr);
+    len = _printf("Percent:[%%]\n");
+    len2 = printf("Percent:[%%]\n");
+    _printf("Len:[%d]\n", len);
+    printf("Len:[%d]\n", len2);
+    _printf("Unknown:[%r]\n");
+    printf("Unknown:[%r]\n");
 }
-// 110001
-// 001111
-// 000001
-
-/*0b110000
-0b110001
-0b110010
-0b110011
-0b110100
-0b110101
-0b110110
-0b110111
-0b111000
-0b111001 */

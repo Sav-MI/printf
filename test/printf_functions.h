@@ -1,20 +1,3 @@
-#include "main.h"
-
-/** _printf - prints characters of specified format
- * to standard output
- * Return: returns the total length of string printed so far
-*/
-int _printf(const char * format, ...)
-{
-  int n;
-    va_list cc_printfgs, copy_cc_printfgs;
-    va_start(cc_printfgs, format);
-    va_copy(copy_cc_printfgs, cc_printfgs);
-    n = (handle_format_specifier(format, copy_cc_printfgs));
-
-    return n;
-}
-
 
 /** handle_format_specifier - handles format specification and
  * writing to buffer
@@ -191,6 +174,7 @@ int handle_format_specifier(const char *fmt, va_list args)
 			    length_fstring = integer_handler(uinteg, length_fstring, 0, 10, 0, strbuffer, &flag_switch);
 			    break;
 			case 'i':
+			    __attribute__((fallthrough));
 			case 'd':
 			    uinteg = get_integer(stage, 1, &args);
 			    length_fstring = integer_handler(uinteg, length_fstring, 0, 10, 1, strbuffer, &flag_switch);
@@ -219,7 +203,6 @@ int handle_format_specifier(const char *fmt, va_list args)
 			    PUSH_TO_BUFFER(temp_fmt, strbuffer, length_fstring);
 			    length_fstring += 1;
 			default:
-			  break;
 			    /* HANDLE ERROR */
 			}
 		}
@@ -227,6 +210,7 @@ int handle_format_specifier(const char *fmt, va_list args)
 	}
     strbuffer[length_fstring] = '\0';
     write(1, strbuffer, length_fstring);
+
     return (length_fstring);
 }
 

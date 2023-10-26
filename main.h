@@ -8,10 +8,9 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stdio.h>
-typedef struct fmt_flags fmt_flags;
 
-typedef struct fmt_flags {
+typedef struct fmt_flags fmt_flags;
+struct fmt_flags {
   int space;
   int plus;
   int neg;
@@ -20,7 +19,7 @@ typedef struct fmt_flags {
   int precision;
   int star;
   int hash;
-} flag;
+};
 
 enum stage{
   STAGE_CHAR = -2,
@@ -43,34 +42,28 @@ typedef enum base_type {
 
 #define MIN_STAGE STAGE_CHAR
 #define MAX_STAGE STAGE_LONG
+#define BUFFER_SIZE 1024
+#define SIZE_BIT (3 + sizeof (void *) * (CHAR_BIT >> 2));
 
-#define SIZE_BIT (3 + sizeof(void *) * (CHAR_BIT) / 4)
-#define reset(val) val = 0
-#define isnum_min 48
-#define isnum_max 57
 #define UNUSED(c) (void)(c)
-#define ADD_1(x) x += 1
-#define SUB_1(x) x -= 1
-#define  PUSH(x, buff, t)\
-  (*(buff + t) = x)
-#define ischar_digit(str_val)\
-  (str_val >= isnum_min && str_val <= isnum_max)
-#define SWITCH_OFF(val) val = 0
 
-#define PUSH_BASE_TAG(BUFFER, TAG_UPPER, TAG_LOWER, CASE, LEN)\
-  do {\
-  BUFFER[LEN ++] = CASE ? TAG_UPPER : TAG_LOWER;	\
-  BUFFER[LEN ++] = '0';\
-  } while (0)
+#define  PUSH_TO_BUFFER(OBJ, BUFFER, LEN)\
+  (*(BUFFER + LEN) = OBJ)
+
+#define ISCHAR_DIGIT(STR_VAL)			\
+  (STR_VAL >= 48 && STR_VAL <= 57)
+
 #define IF_APUSH_A_ELSE_B(CASE, R_CASE, A, B, LEN_A, LEN_B, OBJ)\
-  if (!CASE){							\
-    if (R_CASE)							\
-      A[LEN_A ++] = OBJ;					\
-  }								\
-  else {							\
-    if (R_CASE)							\
-      B[LEN_B ++] = OBJ;					\
-  }
+  do {								\
+    if (!CASE){							\
+      if (R_CASE)						\
+	A[LEN_A ++] = OBJ;					\
+    }								\
+    else {							\
+      if (R_CASE)						\
+	B[LEN_B ++] = OBJ;					\
+    }								\
+  } while (0)
 #define CLEAN_UP_PRECISION(PRSN, BUFFER, LEN)\
   do {\
   PRSN = PRSN > LEN ? PRSN - LEN : 0;\
@@ -78,17 +71,12 @@ typedef enum base_type {
     BUFFER[LEN ++] = '0';\
   } while (0)
 
-#define INTEGER_TO_CHAR(INT) (unsigned char)((INT) + 48)
-
-#define HEX_F 70
-#define HEX_f 102
-#define UPPER_A 65
-#define UPPER_Z 90
-#define LOWER_a 97
-#define LOWER_z 122
+#define INTEGER_TO_CHAR(INTEGER) ((unsigned char)((INTEGER) + 48))
+#define DIVIDE_BY_10(INTEGER)\
+  ((INTEGER << 1) + (INTEGER << 3))
 
 /* template for array reversal */
-#define REV_AR(typename, val) \
+#define XOR_REVERSE(typename, val) \
   typename *REV_AR_##val(typename *oop, int len){     \
   int haf_len = (len / 2); \
   int i = 0; \
@@ -105,5 +93,7 @@ typedef enum base_type {
 int _printf(const char *, ...);
 int handle_format_specifier (const char *, va_list);
 uintmax_t get_integer(int, int, va_list *);
-int integer_handler(uintmax_t, int, unsigned int, int, int, int, char *, fmt_flags *);
+int integer_handler(uintmax_t, int, unsigned int, int, int, char *, fmt_flags *);
+int string_handler(char *, int, int, int, char *, fmt_flags *);
+
 #endif

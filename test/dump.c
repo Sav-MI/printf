@@ -1,46 +1,89 @@
-int str_fmt(char *s, char *buff, int len, int buff_inx, int stage, flag *fg){
-  int i, k, tmp_len;
+int string_handler(char *str, int style, int strict_prsn, int len_str, char *buffer, fmt_flags *flags)
+{
+    unsigned char c;
+    int len = 0;
+    int oo = 0, pp = 0;
+    int precision, width, non_printable;
+    int save_len __attribute__((unused));
 
-  tmp_len = buff_inx;
-  i = 0; k = 0;
+    enum style_state {
+	normal,
+	rotate_13,
+	reverse_buffer,
+	printable
+    };
 
-  if (stage == FL_REV && len != 1){
-    while (1){
-      if (s[i] == ' ')
-	i++;
-      else
+    while ((c = str[len])){
+	if ((style == printable) && (c < 32 || c > 126))
+	    non_printable += 1;
+	len += 1;
+    }
+    len += non_printable;
+
+    precision = flags->precision;
+
+    /* canonicalize string length with precision */
+    if (precision > len || !(strict_prsn && precision))
+	precision = len;
+
+    /* width length */
+    width = flags->width;
+    width = width > precision ? width - precision : 0;
+
+    if (flags->neg)
+	oo = len_str;
+    else {
+	oo = len_str + width;
+	save_len = len_str;
+    }
+
+    switch (style){
+    case normal:
+	while (precision --> 0)
+	    buffer[oo ++] = str[pp ++];
+	break;
+    case rotate_13:
+	for (pp = 0; (precision --> 0) && (c = str[pp]); pp++){
+	    if (c > 64 && c < 92){
+		if ((c - 64) < 14)
+		    c += 13;
+		else
+		    c -= 13;
+	    }
+	    else if (c > 96 && c < 123){
+		if ((c - 96) < 14)
+		    c += 13;
+		else
+		    c -= 13;
+	    }
+	    buffer[oo ++] = c;
+	}
+	break;
+    case reverse_buffer:
+	while (precision --> 0)
+	    buffer[oo ++] = str[precision];
+	break;
+    case printable:
+	while (precision --> 0){
+	    c = str[pp ++];
+	    if (c < 32 || c > 126){
+		buffer[oo ++] = '\\';
+		precision--;
+		buffer[oo ++] = 'x';
+	    }
+	    else
+		buffer[oo ++] = c;
+	}
 	break;
     }
-    k = 1;
-    while (1){
-      if (s[len - k] == ' ')
-	k++;
-      else
-	break;
+
+    while (width --> 0){
+	if (flags->neg)
+	    buffer[oo ++] = ' ';
+	else {
+	    buffer[save_len ++] = ' ';
+	    oo += 1;
+	}
     }
-    len -= (i + (--k));
-  }
-
-  if (fg->prsn > len)
-    fg->prsn = -1;
-  len = !(fg->prsn) ? 0 : len;
-  len = fg->prsn > 0 ? fg->prsn : len;
-
-  fg->width = len < fg->width ? fg->width - len : 0;
-  if (fg->width && !(fg->neg))
-    buff_inx += fg->width;
-
-  while (len){
-    buff[buff_inx++] = s[i];
-    i++; len--;
-  }
-
-  while (fg->width){
-    if (fg->neg)
-      buff[buff_inx++] = ' ';
-    else
-      buff[tmp_len++]= ' ';
-    fg->width--;
-  }
-  return buff_inx;
+    return len_str + oo;
 }
