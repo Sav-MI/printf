@@ -20,8 +20,7 @@ int _printf(const char *str, ...)
 	{
 		if (c == '%')
 		{
-			c = str[i + 1];
-			i++;
+			c = str[++i];
 			switch (c)
 			{
 			case 'c':
@@ -34,7 +33,7 @@ int _printf(const char *str, ...)
 					cc = "(null)";
 
 				while ((c = cc[oo++]) != '\0')
-						n += _putchar(c);
+					n += _putchar(c);
 				break;
 			case '%':
 				n += _putchar('%');
