@@ -11,16 +11,16 @@ int _printf(const char *format, ...)
 	char c, *cc;
 	va_list args;
 
-	va_start(args, str);
+	va_start(args, format);
 
-	if (str == NULL || str[0] == '\0')
+	if (format == NULL || format[0] == '\0')
 		return (0);
 
-	while ((c = str[i]) != '\0')
+	while ((c = format[i]) != '\0')
 	{
 		if (c == '%')
 		{
-			c = str[++i];
+			c = format[++i];
 			switch (c)
 			{
 			case 'c':
@@ -49,13 +49,6 @@ int _printf(const char *format, ...)
 	return (n);
 }
 
-#include <stdio.h>
-int main(void)
-{
-	printf("%d\n", _printf("hello"));
-
-	return (0);
-}
 /**
  * _putchar - put char
  * @s: char
