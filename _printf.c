@@ -13,8 +13,8 @@ int _printf(const char *format, ...)
 
 	va_start(args, format);
 
-	if (format == NULL || format[0] == '\0')
-		return (0);
+	if (format == (char *)0)
+		return (-1);
 
 	while ((c = format[i]) != '\0')
 	{
