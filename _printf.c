@@ -2,10 +2,10 @@
 
 /**
  * _printf - printf
- * @str: format string
+ * @format: format string
  * Return: number of characters printed
  */
-int _printf(const char *str, ...)
+int _printf(const char *format, ...)
 {
 	int i = 0, oo = 0, n = 0;
 	char c, *cc;
@@ -49,6 +49,13 @@ int _printf(const char *str, ...)
 	return (n);
 }
 
+#include <stdio.h>
+int main(void)
+{
+	printf("%d\n", _printf("hello"));
+
+	return (0);
+}
 /**
  * _putchar - put char
  * @s: char
