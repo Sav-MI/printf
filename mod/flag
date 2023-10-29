@@ -1,0 +1,1 @@
+-Wall -Wextra -pedantic -std=c89 string_handler.c string_utils.c _putchar.c

@@ -1,0 +1,122 @@
+#ifndef MAIN_H
+#define MAIN_H
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <limits.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdbool.h>
+
+typedef struct fmt_flags fmt_flags;
+struct fmt_flags {
+	int width;
+	int precision;
+	int style;
+	bool is_signed;
+	bool is_case;
+	bool is_char;
+	bool space;
+	bool plus;
+	bool neg;
+	bool zero_pad;
+	bool strict_precision;
+	bool star;
+	bool hash;
+	unsigned char base; 
+};
+
+
+/** @style_state: styles to print buffer */
+enum style_state
+	{
+		normal,
+		rotate_13,
+		reverse_buffer,
+		printable
+	};
+
+enum stage{
+  STAGE_CHAR = -2,
+  STAGE_SHORT = -1,
+  STAGE_INT = 0,
+  STAGE_LONG = 1
+};
+
+typedef enum base_type {
+  decimal = 10,
+  hexadecimal = 16,
+  octadecimal = 8,
+  binary = 2
+} base_type;
+
+#define HEXADECIMAL 16
+#define DECIMAL 10
+#define OCTADECIMAL 8
+#define BINARY 2
+
+#define MIN_STAGE STAGE_CHAR
+#define MAX_STAGE STAGE_LONG
+#define BUFFER_SIZE 1024
+#define SIZE_BIT (3 + sizeof (void *) * (CHAR_BIT >> 2));
+
+#define UNUSED(c) (void)(c)
+
+#define  PUSH_TO_BUFFER(OBJ, BUFFER, LEN)\
+  (*(BUFFER + LEN) = OBJ)
+
+#define ISCHAR_DIGIT(STR_VAL)			\
+  (STR_VAL >= 48 && STR_VAL <= 57)
+
+#define IF_APUSH_A_ELSE_B(CASE, R_CASE, A, B, LEN_A, LEN_B, OBJ)\
+  do {								\
+    if (!CASE){							\
+      if (R_CASE)						\
+	A[LEN_A ++] = OBJ;					\
+    }								\
+    else {							\
+      if (R_CASE)						\
+	B[LEN_B ++] = OBJ;					\
+    }								\
+  } while (0)
+#define CLEAN_UP_PRECISION(PRSN, BUFFER, LEN)\
+  do {\
+  PRSN = PRSN > LEN ? PRSN - LEN : 0;\
+  while (PRSN --> 0)\
+    BUFFER[LEN ++] = '0';\
+  } while (0)
+
+#define INTEGER_TO_CHAR(INTEGER) ((unsigned char)((INTEGER) + 48))
+#define DIVIDE_BY_10(INTEGER)\
+  ((INTEGER << 1) + (INTEGER << 3))
+
+#define TO_INTEGER(s, c, n, i)					\
+	for (; (c = s[i]) && ISCHAR_DIGIT(c); i++)\
+		n = DIVIDE_BY_10(n) + (c & 0xf)
+
+/* template for array reversal */
+#define XOR_REVERSE(typename, val) \
+  typename *REV_AR_##val(typename *oop, int len){     \
+  int haf_len = (len / 2); \
+  int i = 0; \
+  --len; \
+  while (i != haf_len){ \
+  oop[i] ^= oop[len - i]; \
+  oop[len - i] ^= oop[i]; \
+  oop[i] ^= oop[len - i]; \
+  i++;   \
+  }           \
+  return oop;  \
+  }                \
+
+int _printf(const char *, ...);
+int handle_format_specifier (const char *, va_list);
+uintmax_t get_integer(int, int, va_list *);
+int integer_handler(uintmax_t, int, unsigned int, int, int, char *, fmt_flags *);
+int string_mod(char *, int, int, char *, fmt_flags);
+int string_length(const char *, int);
+int copy_src_dest(char *__restrict__ , char *, int, int);
+int copy_printable(const char *__restrict__, char *, int);
+int rotate_by_13(const char *__restrict__, char *, int);
+#endif

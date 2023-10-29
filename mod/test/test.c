@@ -4,11 +4,17 @@
 int main(void){
 int len;
     int len2;
-    unsigned int ui;
+    unsigned int ui __attribute__((unused)) = 0;
     void *addr;
-
+	const int n = 5;
+	
+	char x[2 * n];
+	//	printf("%s %46s %s\n", "made", NULL, "again" );
+	/**
     len = _printf("Let's try to printf a simple sentence.\n");
     len2 = printf("Let's try to printf a simple sentence.\n");
+	_printf("%7.s\n", "hello");
+	printf("%7.s\n", "hello");
     ui = (unsigned int)INT_MAX + 1024;
     addr = (void *)0x7ffe637541f0;
     _printf("Length:[%d, %i]\n", len, len);
@@ -33,4 +39,5 @@ int len;
     printf("Len:[%d]\n", len2);
     _printf("Unknown:[%r]\n");
     printf("Unknown:[%r]\n");
+	*/
 }
