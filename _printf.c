@@ -11,10 +11,9 @@ int _printf(const char *format, ...)
 	char c, *cc;
 	va_list args;
 
-	va_start(args, format);
-
 	if (format == (char *)0)
 		return (-1);
+	va_start(args, format);
 
 	while ((c = format[i]) != '\0')
 	{
@@ -24,22 +23,23 @@ int _printf(const char *format, ...)
 			switch (c)
 			{
 			case 'c':
-				n += _putchar((char)va_arg(args, int));
+				n += _putchar((unsigned char)va_arg(args, int));
 				break;
 			case 's':
 				cc = va_arg(args, char *);
-
 				if (cc == NULL)
 					cc = "(null)";
-
 				while ((c = cc[oo++]) != '\0')
 					n += _putchar(c);
 				break;
 			case '%':
 				n += _putchar('%');
 				break;
-			default:
+			case '\0':
 				return (-1);
+			default:
+				n += _putchar('%');
+				i--;
 			}
 		}
 		else
