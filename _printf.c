@@ -39,7 +39,7 @@ int _printf(const char *format, ...)
 				n += _putchar('%');
 				break;
 			default:
-				n += _putchar('%');
+				return (0);
 			}
 		}
 		else
