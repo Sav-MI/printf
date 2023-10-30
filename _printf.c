@@ -14,7 +14,6 @@ int _printf(const char *format, ...)
 	if (format == (char *)0)
 		return (-1);
 	va_start(args, format);
-
 	while ((c = format[i]) != '\0')
 	{
 		if (c == '%')
@@ -27,8 +26,9 @@ int _printf(const char *format, ...)
 				break;
 			case 's':
 				cc = va_arg(args, char *);
-				if (cc == NULL)
+				if (cc == (char *)0)
 					cc = "(null)";
+
 				while ((c = cc[oo++]) != '\0')
 					n += _putchar(c);
 				break;
@@ -47,14 +47,4 @@ int _printf(const char *format, ...)
 		i++;
 	}
 	return (n);
-}
-
-/**
- * _putchar - put char
- * @s: char
- * Return: number of character printed
- */
-int _putchar(const char s)
-{
-	return (write(1, &s, 1));
 }

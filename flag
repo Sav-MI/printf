@@ -1,0 +1,1 @@
+-Wall -Wextra -pedantic -Wno-format -std=gnu89 _printf.c mod/test.c _putchar.c

@@ -4,10 +4,12 @@
 int main(void){
 	int o, p;
 
-	p = printf("%c%\0,true", '5');
+	p = printf("%d");
 	putchar('\n');
-	o = _printf("%c%\0,true", '5', '5');
+	o = _printf("%d");
 	putchar('\n');
 
 	printf("%d, %d\n", p, o);
+
+	return (0);
 }
