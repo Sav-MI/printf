@@ -7,8 +7,8 @@
  */
 int _printf(const char *format, ...)
 {
-	int i = 0, oo = 0, n = 0;
-	char c, *cc;
+	int i = 0, n __attribute__((unused)) = 0;
+	char c;
 	va_list args;
 
 	if (format == NULL || (*format == '%' && format[1] == '\0'))
@@ -25,12 +25,7 @@ int _printf(const char *format, ...)
 				n += _putchar((unsigned char)va_arg(args, int));
 				break;
 			case 's':
-				cc = va_arg(args, char *);
-				if (cc == (char *)0)
-					cc = "(null)";
-
-				while ((c = cc[oo++]) != '\0')
-					n += _putchar(c);
+				n += printf_string(args);
 				break;
 			case '%':
 				n += _putchar('%');
@@ -47,4 +42,47 @@ int _printf(const char *format, ...)
 		i++;
 	}
 	return (n);
+}
+
+/**
+  * printf_string - print a string.
+  * @val: argumen t.
+  * Return: the length of the string.
+  */
+
+int printf_string(va_list val)
+{
+	char *s;
+	int i, len;
+
+	s = va_arg(val, char *);
+	if (s == NULL)
+	{
+		s = "(null)";
+		len = _strlen(s);
+		for (i = 0; i < len; i++)
+			_putchar(s[i]);
+		return (len);
+	}
+	else
+	{
+		len = _strlen(s);
+		for (i = 0; i < len; i++)
+			_putchar(s[i]);
+		return (len);
+	}
+}
+
+/**
+ * _strlen - string length
+ * @s: string
+ * Return: length of string
+ */
+int _strlen(char *s)
+{
+	int oo = 0;
+
+	while (s[oo])
+		oo += 1;
+	return (oo);
 }
