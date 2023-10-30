@@ -4,9 +4,9 @@
 int main(void){
 	int o, p;
 
-	p = printf("%d");
+	p = printf("%");
 	putchar('\n');
-	o = _printf("%d");
+	o = _printf("%");
 	putchar('\n');
 
 	printf("%d, %d\n", p, o);
